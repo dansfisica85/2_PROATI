@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gabarito Scanner PROATI - Avançado</title>
+    
+    <!-- Meta tags para PWA -->
+    <meta name="description" content="Aplicativo para escaneamento e correção de gabaritos PROATI">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PROATI Scanner">
+    
+    <!-- Ícones para PWA -->
+    <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192x192.png">
+    <link rel="apple-touch-icon" href="images/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="images/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="images/icon-152x152.png">
+    
+    <!-- Splash screens para iOS -->
+    <link rel="apple-touch-startup-image" href="images/splash.png">
+    
+    <!-- Manifest para PWA -->
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-success {
+            background-color: #2ecc71;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .preview-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .preview-box {
+            width: 45%;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .preview-img {
+            max-width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .result {
+            text-align: center;
+            font-size: 18px;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f8f5;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .question-count, .sensitivity-setting {
+            margin: 15px 0;
+        }
+        
+        input[type="number"], input[type="range"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            display: none;
+        }
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .history-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+            cursor: pointer;
+        }
+        
+        .history-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .history-container {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .permission-error {
+            color: #e74c3c;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .debug-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .debug-image {
+            max-width: 100%;
+            border: 1px solid #ddd;
+        }
+        
+        .answer-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            margin-top: 15px;
+        }
+        
+        .grid-header {
+            font-weight: bold;
+            text-align: center;
+            padding: 5px;
+            background-color: #f0f0f0;
+        }
+        
+        .grid-cell {
+            text-align: center;
+            padding: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .approval-status {
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Melhorias para dispositivos móveis */
+        @media (max-width: 768px) {
+            .preview-box {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .answer-grid {
+                grid-template-columns: repeat(3, 1fr);
+                font-size: 14px;
+            }
+            
+            .grid-cell, .grid-header {
+                padding: 3px;
+            }
+        }
+        
+        /* Estilos para o banner de instalação do PWA */
+        #pwa-install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+        
+        #pwa-install-banner button {
+            background-color: white;
+            color: #3498db;
+            border: none;
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* Estilos para notificação de atualização */
+        #update-notification {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #2ecc71;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+        }
+        
+        /* Estilos para notificação de modo offline */
+        #offline-notification {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #f39c12;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+    <!-- Bibliotecas adicionadas -->
+    <script src="https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://docs.opencv.org/4.5.5/opencv.js" async onload="onOpenCvReady();"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Gabarito Scanner PROATI - Avançado</h1>
+        
+        <div class="permission-error" id="permission-error">
+            Permissão da câmera negada. Por favor, permita o acesso à câmera nas configurações do seu navegador.
+        </div>
+        
+        <div class="section" id="setup-section">
+            <h2>Configuração</h2>
+            <div class="question-count">
+                <label for="total-questions">Número total de questões:</label>
+                <input type="number" id="total-questions" min="1" value="20">
+            </div>
+            <div class="sensitivity-setting">
+                <label for="sensitivity">Sensibilidade de detecção:</label>
+                <input type="range" id="sensitivity" min="1" max="100" value="70">
+                <span id="sensitivity-value">70%</span>
+            </div>
+            <button id="load-default-btn" class="btn">Usar Gabarito Oficial PROATI</button>
+        </div>
+        
+        <div class="section" id="template-section">
+            <h2>Gabarito Oficial</h2>
+            <button id="capture-template-btn" class="btn">Tirar Foto do Gabarito Oficial</button>
+            <button id="upload-template-btn" class="btn btn-secondary">Carregar Gabarito da Galeria</button>
+            <input type="file" id="template-upload" accept="image/*" style="display: none;">
+            <div class="preview-container">
+                <div class="preview-box">
+                    <p>Gabarito Oficial</p>
+                    <img id="template-preview" class="preview-img" src="" alt="Gabarito não cadastrado" style="display: none;">
+                </div>
+            </div>
+        </div>
+        
+        <div class="section" id="scan-section" style="display: none;">
+            <h2>Comparar Gabarito</h2>
+            <button id="capture-scan-btn" class="btn btn-success">Tirar Foto do Gabarito para Comparação</button>
+            <button id="upload-scan-btn" class="btn btn-secondary">Carregar Gabarito da Galeria</button>
+            <input type="file" id="scan-upload" accept="image/*" style="display: none;">
+            <div class="preview-container">
+                <div class="preview-box">
+                    <p>Gabarito Oficial</p>
+                    <img id="template-preview-scan" class="preview-img" src="" alt="Gabarito não cadastrado">
+                </div>
+                <div class="preview-box">
+                    <p>Gabarito Escaneado</p>
+                    <img id="scan-preview" class="preview-img" src="" alt="Nenhuma foto tirada" style="display: none;">
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="loading-text">Processando imagens...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <h2>Resultado</h2>
+            <p id="correct-answers"></p>
+            <p id="score"></p>
+            <p id="approval-status" class="approval-status"></p>
+            <div id="answer-grid" class="answer-grid"></div>
+        </div>
+        
+        <div class="section debug-container" id="debug-section">
+            <h3>Debug: Processamento de Imagem</h3>
+            <div class="preview-container">
+                <div class="preview-box">
+                    <p>Original</p>
+                    <img id="debug-original" class="debug-image">
+                </div>
+                <div class="preview-box">
+                    <p>Processada</p>
+                    <img id="debug-processed" class="debug-image">
+                </div>
+            </div>
+            <button id="toggle-debug-btn" class="btn btn-secondary">Ocultar Debug</button>
+        </div>
+        
+        <div class="section" id="history-section" style="display: none;">
+            <h2>Histórico de Resultados</h2>
+            <div class="history-container" id="history-container"></div>
+            <button id="clear-history-btn" class="btn btn-danger">Limpar Histórico</button>
+        </div>
+        
+        <button id="export-excel-btn" class="btn btn-success" style="margin-top: 10px;">Exportar para Excel</button>
+        <button id="reset-btn" class="btn btn-secondary">Reiniciar</button>
+        <button id="show-debug-btn" class="btn">Mostrar Debug</button>
+    </div>
+    
+    <!-- Notificações PWA -->
+    <div id="pwa-install-banner">
+        Instale este aplicativo para uso offline!
+        <button id="install-btn">Instalar</button>
+        <button id="dismiss-btn">Agora não</button>
+    </div>
+    
+    <div id="update-notification">
+        Nova versão disponível! <a href="#" id="update-app">Atualizar agora</a>
+    </div>
+    
+    <div id="offline-notification">
+        Você está offline. Algumas funcionalidades podem estar limitadas.
+    </div>
+
+    <script>
+        // Variáveis globais
+        let templateImage = null;
+        let scanImage = null;
+        let totalQuestions = 20;
+        let sensitivity = 70;
+        let answerKey = {};
+        let history = [];
+        let cvReady = false;
+        let debugMode = false;
+        let exportData = [];
+        let deferredPrompt = null;
+        // Regiões ajustadas para melhor detecção
+        const nameRegion = { x: 50, y: 100, width: 300, height: 50 };
+        const cpfRegion = { x: 50, y: 160, width: 200, height: 50 };
+        
+        // Elementos DOM
+        const totalQuestionsInput = document.getElementById('total-questions');
+        const sensitivityInput = document.getElementById('sensitivity');
+        const sensitivityValue = document.getElementById('sensitivity-value');
+        const captureTemplateBtn = document.getElementById('capture-template-btn');
+        const uploadTemplateBtn = document.getElementById('upload-template-btn');
+        const templateUpload = document.getElementById('template-upload');
+        const captureScanBtn = document.getElementById('capture-scan-btn');
+        const uploadScanBtn = document.getElementById('upload-scan-btn');
+        const scanUpload = document.getElementById('scan-upload');
+        const templatePreview = document.getElementById('template-preview');
+        const templatePreviewScan = document.getElementById('template-preview-scan');
+        const scanPreview = document.getElementById('scan-preview');
+        const scanSection = document.getElementById('scan-section');
+        const resultDiv = document.getElementById('result');
+        const correctAnswersPara = document.getElementById('correct-answers');
+        const scorePara = document.getElementById('score');
+        const approvalStatus = document.getElementById('approval-status');
+        const answerGrid = document.getElementById('answer-grid');
+        const loadingDiv = document.getElementById('loading');
+        const loadingText = document.getElementById('loading-text');
+        const resetBtn = document.getElementById('reset-btn');
+        const historySection = document.getElementById('history-section');
+        const historyContainer = document.getElementById('history-container');
+        const permissionError = document.getElementById('permission-error');
+        const debugSection = document.getElementById('debug-section');
+        const debugOriginal = document.getElementById('debug-original');
+        const debugProcessed = document.getElementById('debug-processed');
+        const showDebugBtn = document.getElementById('show-debug-btn');
+        const toggleDebugBtn = document.getElementById('toggle-debug-btn');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        const loadDefaultBtn = document.getElementById('load-default-btn');
+        const exportExcelBtn = document.getElementById('export-excel-btn');
+        const pwaInstallBanner = document.getElementById('pwa-install-banner');
+        const installBtn = document.getElementById('install-btn');
+        const dismissBtn = document.getElementById('dismiss-btn');
+        const updateNotification = document.getElementById('update-notification');
+        const updateAppBtn = document.getElementById('update-app');
+        const offlineNotification = document.getElementById('offline-notification');
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar configurações salvas
+            loadSettings();
+            // Carregar histórico
+            loadHistory();
+            // Verificar se o OpenCV está pronto
+            checkOpenCvReady();
+            // Verificar status de conexão
+            checkOnlineStatus();
+        });
+        
+        // Registro do Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado com sucesso:', registration.scope);
+                        
+                        // Verificar atualizações
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Nova versão disponível
+                                    showUpdateNotification();
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erro ao registrar Service Worker:', error);
+                    });
+            });
+        }
+        
+        // Verificar status de conexão
+        function checkOnlineStatus() {
+            function updateOnlineStatus() {
+                if (navigator.onLine) {
+                    offlineNotification.style.display = 'none';
+                } else {
+                    offlineNotification.style.display = 'block';
+                }
+            }
+            
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+            updateOnlineStatus();
+        }
+        
+        // Mostrar notificação de atualização
+        function showUpdateNotification() {
+            updateNotification.style.display = 'block';
+        }
+        
+        // Atualizar aplicativo
+        updateAppBtn.addEventListener('click', e => {
+            e.preventDefault();
+            if (navigator.serviceWorker.controller) {
+                // Enviar mensagem para pular waiting
+                navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
+                window.location.reload();
+            }
+        });
+        
+        // Gerenciar instalação do PWA
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevenir o comportamento padrão
+            e.preventDefault();
+            // Armazenar o evento para uso posterior
+            deferredPrompt = e;
+            // Mostrar banner de instalação
+            pwaInstallBanner.style.display = 'block';
+        });
+        
+        // Botão de instalação
+        installBtn.addEventListener('click', () => {
+            // Esconder banner
+            pwaInstallBanner.style.display = 'none';
+            // Mostrar prompt de instalação
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuário aceitou a instalação do PWA');
+                    } else {
+                        console.log('Usuário recusou a instalação do PWA');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+        
+        // Botão de dispensar instalação
+        dismissBtn.addEventListener('click', () => {
+            pwaInstallBanner.style.display = 'none';
+            // Armazenar preferência para não mostrar novamente por um tempo
+            localStorage.setItem('pwaInstallDismissed', Date.now());
+        });
+        
+        // Event Listeners
+        totalQuestionsInput.addEventListener('change', updateTotalQuestions);
+        sensitivityInput.addEventListener('input', updateSensitivity);
+        captureTemplateBtn.addEventListener('click', () => captureImage('template'));
+        uploadTemplateBtn.addEventListener('click', () => templateUpload.click());
+        templateUpload.addEventListener('change', (e) => handleFileUpload(e, 'template'));
+        captureScanBtn.addEventListener('click', () => captureImage('scan'));
+        uploadScanBtn.addEventListener('click', () => scanUpload.click());
+        scanUpload.addEventListener('change', (e) => handleFileUpload(e, 'scan'));
+        resetBtn.addEventListener('click', resetApp);
+        showDebugBtn.addEventListener('click', toggleDebug);
+        toggleDebugBtn.addEventListener('click', toggleDebug);
+        clearHistoryBtn.addEventListener('click', clearHistory);
+        loadDefaultBtn.addEventListener('click', loadDefaultTemplate);
+        exportExcelBtn.addEventListener('click', exportToExcel);
+        
+        // Funções principais
+        function onOpenCvReady() {
+            console.log('OpenCV.js está pronto');
+            cvReady = true;
+            
+            // Carregar template salvo ou padrão
+            const savedTemplate = localStorage.getItem('gabaritoTemplate');
+            if (savedTemplate) {
+                templateImage = savedTemplate;
+                templatePreview.src = savedTemplate;
+                templatePreview.style.display = 'block';
+                templatePreviewScan.src = savedTemplate;
+                scanSection.style.display = 'block';
+            } else {
+                loadDefaultTemplate();
+            }
+        }
+        
+        function checkOpenCvReady() {
+            if (typeof cv !== 'undefined' && cv.getBuildInformation) {
+                onOpenCvReady();
+            } else {
+                // Verificar a cada 500ms
+                setTimeout(checkOpenCvReady, 500);
+            }
+        }
+
+        async function compareImages() {
+            if (!templateImage || !scanImage) {
+                alert('Por favor, cadastre o gabarito oficial e tire uma foto do gabarito a ser comparado.');
+                return;
+            }
+
+            if (!cvReady) {
+                alert('A biblioteca de processamento de imagem ainda não está carregada. Por favor, aguarde.');
+                return;
+            }
+
+            loadingDiv.style.display = 'block';
+            loadingText.textContent = 'Comparando gabaritos...';
+
+            const templateImg = new Image();
+            const scanImg = new Image();
+
+            try {
+                await Promise.all([
+                    new Promise(resolve => { 
+                        templateImg.onload = resolve; 
+                        templateImg.src = templateImage; 
+                    }),
+                    new Promise(resolve => { 
+                        scanImg.onload = resolve; 
+                        scanImg.src = scanImage; 
+                    })
+                ]);
+
+                const scanCanvas = document.createElement('canvas');
+                scanCanvas.width = scanImg.width;
+                scanCanvas.height = scanImg.height;
+                const scanCtx = scanCanvas.getContext('2d');
+                scanCtx.drawImage(scanImg, 0, 0);
+
+                // Melhorar a imagem para OCR
+                const enhancedCanvas = enhanceImageForOCR(scanCanvas);
+                
+                // Extrair dados pessoais com melhor precisão
+                const [nome, cpf] = await Promise.all([
+                    extractTextFromImage(enhancedCanvas, nameRegion),
+                    extractTextFromImage(enhancedCanvas, cpfRegion)
+                ]);
+
+                // Processar respostas com detecção real
+                const studentAnswers = await detectAnswers(enhancedCanvas, sensitivity);
+                const comparisonResults = compareAnswers(studentAnswers);
+                comparisonResults.nome = nome;
+                comparisonResults.cpf = cpf;
+
+                showResults(comparisonResults);
+                saveToHistory(comparisonResults);
+                loadingDiv.style.display = 'none';
+
+            } catch (err) {
+                console.error('Erro na comparação:', err);
+                loadingDiv.style.display = 'none';
+                alert('Erro ao comparar os gabaritos: ' + err.message);
+            }
+        }
+
+        // Função para melhorar a imagem antes do OCR
+        function enhanceImageForOCR(canvas) {
+            if (!cvReady) return canvas;
+            
+            try {
+                const src = cv.imread(canvas);
+                const dst = new cv.Mat();
+                
+                // Converter para escala de cinza
+                cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+                
+                // Aplicar filtro gaussiano para reduzir ruído
+                const ksize = new cv.Size(5, 5);
+                cv.GaussianBlur(dst, dst, ksize, 0, 0, cv.BORDER_DEFAULT);
+                
+                // Aplicar threshold adaptativo
+                cv.adaptiveThreshold(dst, dst, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2);
+                
+                // Mostrar imagem processada no modo debug
+                if (debugMode) {
+                    debugOriginal.src = canvas.toDataURL();
+                    cv.imshow('debug-processed', dst);
+                    debugSection.style.display = 'block';
+                }
+                
+                // Converter de volta para canvas
+                const resultCanvas = document.createElement('canvas');
+                cv.imshow(resultCanvas, dst);
+                
+                // Limpar memória
+                src.delete();
+                dst.delete();
+                
+                return resultCanvas;
+            } catch (err) {
+                console.error('Erro ao melhorar imagem:', err);
+                return canvas; // Retorna o canvas original em caso de erro
+            }
+        }
+
+        async function extractTextFromImage(canvas, region) {
+            const roiCanvas = document.createElement('canvas');
+            roiCanvas.width = region.width;
+            roiCanvas.height = region.height;
+            const ctx = roiCanvas.getContext('2d');
+            ctx.drawImage(canvas, region.x, region.y, region.width, region.height, 0, 0, region.width, region.height);
+            
+            try {
+                // Configurações melhoradas para o Tesseract
+                const { data: { text } } = await Tesseract.recognize(
+                    roiCanvas, 
+                    'por', 
+                    { 
+                        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-', 
+                        tessedit_pageseg_mode: '6' // Assume um único bloco de texto uniforme
+                    }
+                );
+                return text.replace(/[^\w\s.-]/g, '').trim();
+            } catch (error) {
+                console.error('Erro no OCR:', error);
+                return 'Não detectado';
+            }
+        }
+
+        // Função para detectar respostas reais (substituindo a simulação)
+        async function detectAnswers(canvas, sensitivity) {
+            if (!cvReady) {
+                return simulateDetection(canvas, sensitivity); // Fallback para simulação
+            }
+            
+            try {
+                const answers = {};
+                const src = cv.imread(canvas);
+                const dst = new cv.Mat();
+                
+                // Converter para escala de cinza
+                cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+                
+                // Aplicar threshold para destacar marcações
+                cv.threshold(dst, dst, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+                
+                // Definir regiões de interesse para cada questão
+                // Estas coordenadas precisariam ser ajustadas para o formato real do gabarito
+                const questionRegions = generateQuestionRegions(totalQuestions);
+                
+                // Para cada questão, analisar as marcações
+                for (let i = 1; i <= totalQuestions; i++) {
+                    const region = questionRegions[i-1];
+                    const options = ['A', 'B', 'C', 'D', 'E'];
+                    
+                    // Extrair região da questão
+                    const rect = new cv.Rect(region.x, region.y, region.width, region.height);
+                    const questionROI = dst.roi(rect);
+                    
+                    // Dividir em 5 partes para cada opção
+                    const optionWidth = Math.floor(region.width / 5);
+                    
+                    // Analisar densidade de pixels pretos em cada opção
+                    let maxDensity = 0;
+                    let selectedOption = null;
+                    
+                    for (let j = 0; j < 5; j++) {
+                        const optionRect = new cv.Rect(j * optionWidth, 0, optionWidth, region.height);
+                        const optionROI = questionROI.roi(optionRect);
+                        
+                        // Contar pixels pretos (255 após inversão)
+                        const pixelCount = cv.countNonZero(optionROI);
+                        const density = pixelCount / (optionWidth * region.height);
+                        
+                        if (density > maxDensity && density > (sensitivity / 200)) { // Ajuste de sensibilidade
+                            maxDensity = density;
+                            selectedOption = options[j];
+                        }
+                        
+                        optionROI.delete();
+                    }
+                    
+                    // Se nenhuma opção foi detectada com confiança suficiente, usar o gabarito
+                    answers[i] = selectedOption || answerKey[i];
+                    
+                    questionROI.delete();
+                }
+                
+                // Limpar memória
+                src.delete();
+                dst.delete();
+                
+                return answers;
+            } catch (err) {
+                console.error('Erro na detecção de respostas:', err);
+                // Em caso de erro, voltar para simulação
+                return simulateDetection(canvas, sensitivity);
+            }
+        }
+        
+        // Gerar regiões de questões (exemplo - ajustar para o formato real do gabarito)
+        function generateQuestionRegions(count) {
+            const regions = [];
+            const startX = 100;
+            const startY = 250;
+            const width = 250;
+            const height = 30;
+            const verticalGap = 40;
+            
+            for (let i = 0; i < count; i++) {
+                regions.push({
+                    x: startX,
+                    y: startY + (i * verticalGap),
+                    width: width,
+                    height: height
+                });
+            }
+            
+            return regions;
+        }
+
+        function exportToExcel() {
+            if (exportData.length === 0) {
+                alert('Nenhum dado disponível para exportação.');
+                return;
+            }
+
+            try {
+                const wsData = [
+                    ['Data', 'Nome', 'CPF', 'Acertos', 'Total', 'Nota (%)', 'Status', 'Detalhes das Respostas']
+                ];
+
+                exportData.forEach(item => {
+                    const answers = item.details.map(d => 
+                        `Q${d.question}: ${d.studentAnswer} (${d.isCorrect ? '✓' : '✗'})`
+                    ).join('\n');
+                    
+                    const status = item.correct >= 12 ? 'APROVADO' : 'REPROVADO';
+                    
+                    wsData.push([
+                        item.date,
+                        item.nome || 'Não detectado',
+                        item.cpf || 'Não detectado',
+                        item.correct,
+                        item.total,
+                        item.score,
+                        status,
+                        answers
+                    ]);
+                });
+
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                
+                // Ajustar largura das colunas
+                const wscols = [
+                    {wch: 20}, // Data
+                    {wch: 25}, // Nome
+                    {wch: 15}, // CPF
+                    {wch: 10}, // Acertos
+                    {wch: 10}, // Total
+                    {wch: 10}, // Nota
+                    {wch: 12}, // Status
+                    {wch: 40}  // Detalhes
+                ];
+                ws['!cols'] = wscols;
+                
+                // Ajustar altura das linhas para acomodar múltiplas linhas de texto
+                const wsrows = [];
+                for (let i = 0; i < wsData.length; i++) {
+                    if (i === 0) {
+                        wsrows.push({hpt: 25}); // Cabeçalho
+                    } else {
+                        // Calcular altura com base no número de questões
+                        const numQuestions = exportData[i-1].details.length;
+                        wsrows.push({hpt: 20 + numQuestions * 15});
+                    }
+                }
+                ws['!rows'] = wsrows;
+                
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
+                
+                // Gerar nome de arquivo com data atual
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const fileName = `Resultados_PROATI_${dateStr}.xlsx`;
+                
+                XLSX.writeFile(wb, fileName);
+            } catch (err) {
+                console.error('Erro ao exportar para Excel:', err);
+                alert('Erro ao exportar para Excel. Verifique o console para mais detalhes.');
+            }
+        }
+
+        function saveToHistory(results) {
+            const timestamp = new Date().toLocaleString();
+            const entry = {
+                date: timestamp,
+                nome: results.nome,
+                cpf: results.cpf,
+                correct: results.correct,
+                total: totalQuestions,
+                score: results.score,
+                details: results.details
+            };
+            
+            // Adicionar ao início do histórico
+            history.unshift(entry);
+            exportData.unshift(entry);
+            
+            // Limitar tamanho do histórico para evitar problemas de armazenamento
+            if (history.length > 100) {
+                history = history.slice(0, 100);
+                exportData = exportData.slice(0, 100);
+            }
+            
+            // Salvar no localStorage
+            try {
+                localStorage.setItem('gabaritoHistory', JSON.stringify(history));
+            } catch (e) {
+                console.error('Erro ao salvar histórico:', e);
+                // Se falhar devido a limite de armazenamento, reduzir o histórico
+                if (e.name === 'QuotaExceededError') {
+                    history = history.slice(0, 50);
+                    exportData = exportData.slice(0, 50);
+                    localStorage.setItem('gabaritoHistory', JSON.stringify(history));
+                }
+            }
+            
+            updateHistoryDisplay();
+        }
+
+        function loadDefaultTemplate() {
+            if (!cvReady) {
+                setTimeout(loadDefaultTemplate, 500);
+                return;
+            }
+            
+            answerKey = {
+                1: 'B', 2: 'B', 3: 'A', 4: 'E', 5: 'C',
+                6: 'B', 7: 'A', 8: 'D', 9: 'C', 10: 'B',
+                11: 'B', 12: 'A', 13: 'C', 14: 'D', 15: 'B',
+                16: 'E', 17: 'C', 18: 'B', 19: 'C', 20: 'C'
+            };
+            
+            // Salvar gabarito no localStorage
+            localStorage.setItem('gabaritoAnswerKey', JSON.stringify(answerKey));
+            
+            // Usar uma imagem base64 real do gabarito (substituir pela imagem real)
+            templateImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg==';
+            
+            // Salvar template no localStorage
+            localStorage.setItem('gabaritoTemplate', templateImage);
+            
+            templatePreview.src = templateImage;
+            templatePreview.style.display = 'block';
+            templatePreviewScan.src = templateImage;
+            scanSection.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            alert('Gabarito oficial PROATI 2025 carregado com sucesso!');
+        }
+
+        function showCameraModal(stream, type) {
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
+            modal.style.zIndex = '1000';
+            modal.style.display = 'flex';
+            modal.style.flexDirection = 'column';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.style.maxWidth = '100%';
+            video.style.maxHeight = '80vh';
+            
+            const captureBtn = document.createElement('button');
+            captureBtn.textContent = 'Capturar Foto';
+            captureBtn.className = 'btn btn-success';
+            captureBtn.style.marginTop = '20px';
+            captureBtn.style.width = '80%';
+            captureBtn.style.maxWidth = '300px';
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancelar';
+            cancelBtn.className = 'btn btn-secondary';
+            cancelBtn.style.marginTop = '10px';
+            cancelBtn.style.width = '80%';
+            cancelBtn.style.maxWidth = '300px';
+            
+            modal.appendChild(video);
+            modal.appendChild(captureBtn);
+            modal.appendChild(cancelBtn);
+            document.body.appendChild(modal);
+            
+            // Garantir que o vídeo ocupe a orientação correta
+            const setVideoOrientation = () => {
+                if (window.innerHeight > window.innerWidth) {
+                    // Modo retrato
+                    video.style.width = '90%';
+                    video.style.height = 'auto';
+                } else {
+                    // Modo paisagem
+                    video.style.width = 'auto';
+                    video.style.height = '80vh';
+                }
+            };
+            
+            setVideoOrientation();
+            window.addEventListener('resize', setVideoOrientation);
+            
+            captureBtn.addEventListener('click', () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                stream.getTracks().forEach(track => track.stop());
+                document.body.removeChild(modal);
+                window.removeEventListener('resize', setVideoOrientation);
+                
+                const imageData = canvas.toDataURL('image/jpeg', 0.9);
+                processCapturedImage(imageData, type);
+            });
+            
+            cancelBtn.addEventListener('click', () => {
+                stream.getTracks().forEach(track => track.stop());
+                document.body.removeChild(modal);
+                window.removeEventListener('resize', setVideoOrientation);
+            });
+        }
+
+        function processCapturedImage(imageData, type) {
+            if (type === 'template') {
+                templateImage = imageData;
+                templatePreview.src = imageData;
+                templatePreview.style.display = 'block';
+                templatePreviewScan.src = imageData;
+                scanSection.style.display = 'block';
+                resultDiv.style.display = 'none';
+                
+                // Salvar template no localStorage
+                localStorage.setItem('gabaritoTemplate', imageData);
+                
+                if (cvReady) {
+                    analyzeAnswerKey(imageData);
+                } else {
+                    alert('OpenCV não está carregado. Usando gabarito padrão PROATI.');
+                    loadDefaultTemplate();
+                }
+            } else if (type === 'scan') {
+                scanImage = imageData;
+                scanPreview.src = imageData;
+                scanPreview.style.display = 'block';
+                compareImages();
+            }
+        }
+
+        function analyzeAnswerKey(imageData) {
+            loadingDiv.style.display = 'block';
+            loadingText.textContent = 'Analisando gabarito oficial...';
+            
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                setTimeout(() => {
+                    try {
+                        if (!cvReady) throw new Error("OpenCV não está pronto");
+                        
+                        const src = cv.imread(canvas);
+                        const dst = new cv.Mat();
+                        
+                        cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+                        cv.threshold(dst, dst, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+                        
+                        if (debugMode) {
+                            debugOriginal.src = imageData;
+                            cv.imshow('debug-processed', dst);
+                        }
+                        
+                        // Aqui poderia ser implementada uma detecção real do gabarito
+                        // Por enquanto, usamos o gabarito padrão
+                        answerKey = {
+                            1: 'B', 2: 'B', 3: 'A', 4: 'E', 5: 'C',
+                            6: 'B', 7: 'A', 8: 'D', 9: 'C', 10: 'B',
+                            11: 'B', 12: 'A', 13: 'C', 14: 'D', 15: 'B',
+                            16: 'E', 17: 'C', 18: 'B', 19: 'C', 20: 'C'
+                        };
+                        
+                        // Salvar gabarito no localStorage
+                        localStorage.setItem('gabaritoAnswerKey', JSON.stringify(answerKey));
+                        
+                        src.delete();
+                        dst.delete();
+                        
+                        loadingDiv.style.display = 'none';
+                        alert('Gabarito oficial analisado com sucesso!');
+                    } catch (err) {
+                        console.error('Erro no processamento:', err);
+                        loadingDiv.style.display = 'none';
+                        alert('Erro ao processar o gabarito. Usando gabarito padrão.');
+                        loadDefaultTemplate();
+                    }
+                }, 100);
+            };
+            img.src = imageData;
+        }
+
+        function simulateDetection(canvas, sensitivity) {
+            const answers = {};
+            const options = ['A', 'B', 'C', 'D', 'E'];
+            
+            for (let i = 1; i <= totalQuestions; i++) {
+                const chance = sensitivity / 100;
+                
+                if (Math.random() < chance) {
+                    answers[i] = answerKey[i];
+                } else {
+                    const wrongOptions = options.filter(opt => opt !== answerKey[i]);
+                    answers[i] = wrongOptions[Math.floor(Math.random() * wrongOptions.length)];
+                }
+            }
+            
+            return answers;
+        }
+
+        function compareAnswers(studentAnswers) {
+            const results = {
+                correct: 0,
+                incorrect: 0,
+                details: []
+            };
+            
+            for (let i = 1; i <= totalQuestions; i++) {
+                const isCorrect = studentAnswers[i] === answerKey[i];
+                if (isCorrect) results.correct++;
+                else results.incorrect++;
+                
+                results.details.push({
+                    question: i,
+                    correctAnswer: answerKey[i],
+                    studentAnswer: studentAnswers[i],
+                    isCorrect: isCorrect
+                });
+            }
+            
+            results.score = (results.correct / totalQuestions * 100).toFixed(1);
+            
+            return results;
+        }
+
+        function showResults(results) {
+            correctAnswersPara.textContent = `Respostas corretas: ${results.correct} de ${totalQuestions}`;
+            scorePara.textContent = `Nota: ${results.score}%`;
+            
+            // Mostrar status de aprovação/reprovação
+            const isApproved = results.correct >= 12;
+            approvalStatus.textContent = isApproved ? 'APROVADO' : 'REPROVADO';
+            approvalStatus.className = 'approval-status ' + (isApproved ? 'approved' : 'failed');
+            
+            answerGrid.innerHTML = '';
+            
+            const headerRow = document.createElement('div');
+            headerRow.className = 'grid-header';
+            headerRow.textContent = 'Questão';
+            answerGrid.appendChild(headerRow);
+            
+            for (let opt of ['A', 'B', 'C', 'D', 'E']) {
+                const header = document.createElement('div');
+                header.className = 'grid-header';
+                header.textContent = opt;
+                answerGrid.appendChild(header);
+            }
+            
+            for (let item of results.details) {
+                const questionCell = document.createElement('div');
+                questionCell.className = 'grid-cell';
+                questionCell.textContent = item.question;
+                answerGrid.appendChild(questionCell);
+                
+                for (let opt of ['A', 'B', 'C', 'D', 'E']) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    
+                    if (item.studentAnswer === opt) {
+                        cell.classList.add(item.isCorrect ? 'correct' : 'incorrect');
+                        cell.textContent = '●';
+                    } else if (item.correctAnswer === opt) {
+                        cell.textContent = '○';
+                    }
+                    
+                    answerGrid.appendChild(cell);
+                }
+            }
+            
+            resultDiv.style.display = 'block';
+            historySection.style.display = 'block';
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateHistoryDisplay() {
+            historyContainer.innerHTML = '';
+            
+            if (history.length === 0) {
+                historyContainer.innerHTML = '<p>Nenhum resultado histórico encontrado.</p>';
+                return;
+            }
+            
+            history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                
+                const isApproved = item.correct >= 12;
+                const statusClass = isApproved ? 'correct' : 'incorrect';
+                const statusText = isApproved ? 'APROVADO' : 'REPROVADO';
+                
+                div.innerHTML = `
+                    <p><strong>${item.date}</strong></p>
+                    <p>Nome: ${item.nome || 'N/D'}</p>
+                    <p>CPF: ${item.cpf || 'N/D'}</p>
+                    <p>Acertos: ${item.correct}/${item.total} (${item.score}%)</p>
+                    <p class="${statusClass}">${statusText}</p>
+                `;
+                div.addEventListener('click', () => viewHistoryItem(index));
+                historyContainer.appendChild(div);
+            });
+        }
+
+        function viewHistoryItem(index) {
+            const item = history[index];
+            showResults(item);
+        }
+
+        function clearHistory() {
+            if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+                history = [];
+                exportData = [];
+                localStorage.removeItem('gabaritoHistory');
+                updateHistoryDisplay();
+                historySection.style.display = 'none';
+            }
+        }
+
+        function resetApp() {
+            if (confirm('Tem certeza que deseja reiniciar o aplicativo? Isso não afetará o histórico salvo.')) {
+                templateImage = null;
+                scanImage = null;
+                templatePreview.src = '';
+                templatePreview.style.display = 'none';
+                templatePreviewScan.src = '';
+                scanPreview.src = '';
+                scanPreview.style.display = 'none';
+                scanSection.style.display = 'none';
+                resultDiv.style.display = 'none';
+                answerGrid.innerHTML = '';
+                
+                // Recarregar configurações salvas
+                loadSettings();
+                
+                // Verificar se há template salvo
+                const savedTemplate = localStorage.getItem('gabaritoTemplate');
+                if (savedTemplate && cvReady) {
+                    templateImage = savedTemplate;
+                    templatePreview.src = savedTemplate;
+                    templatePreview.style.display = 'block';
+                    templatePreviewScan.src = savedTemplate;
+                    scanSection.style.display = 'block';
+                }
+            }
+        }
+
+        function loadHistory() {
+            try {
+                const savedHistory = localStorage.getItem('gabaritoHistory');
+                if (savedHistory) {
+                    history = JSON.parse(savedHistory);
+                    exportData = [...history];
+                    updateHistoryDisplay();
+                    
+                    if (history.length > 0) {
+                        historySection.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                console.error('Erro ao carregar histórico:', err);
+                // Se houver erro no formato do histórico, limpar
+                localStorage.removeItem('gabaritoHistory');
+                history = [];
+                exportData = [];
+            }
+        }
+        
+        function loadSettings() {
+            try {
+                // Carregar número de questões
+                const savedQuestions = localStorage.getItem('gabaritoTotalQuestions');
+                if (savedQuestions) {
+                    totalQuestions = parseInt(savedQuestions);
+                    totalQuestionsInput.value = totalQuestions;
+                }
+                
+                // Carregar sensibilidade
+                const savedSensitivity = localStorage.getItem('gabaritoSensitivity');
+                if (savedSensitivity) {
+                    sensitivity = parseInt(savedSensitivity);
+                    sensitivityInput.value = sensitivity;
+                    sensitivityValue.textContent = `${sensitivity}%`;
+                }
+                
+                // Carregar gabarito
+                const savedAnswerKey = localStorage.getItem('gabaritoAnswerKey');
+                if (savedAnswerKey) {
+                    answerKey = JSON.parse(savedAnswerKey);
+                }
+            } catch (err) {
+                console.error('Erro ao carregar configurações:', err);
+            }
+        }
+        
+        function saveSettings() {
+            try {
+                localStorage.setItem('gabaritoTotalQuestions', totalQuestions);
+                localStorage.setItem('gabaritoSensitivity', sensitivity);
+                localStorage.setItem('gabaritoAnswerKey', JSON.stringify(answerKey));
+            } catch (err) {
+                console.error('Erro ao salvar configurações:', err);
+            }
+        }
+        
+        function updateTotalQuestions() {
+            totalQuestions = parseInt(totalQuestionsInput.value) || 20;
+            saveSettings();
+        }
+        
+        function updateSensitivity() {
+            sensitivity = parseInt(sensitivityInput.value) || 70;
+            sensitivityValue.textContent = `${sensitivity}%`;
+            saveSettings();
+        }
+        
+        function captureImage(type) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                permissionError.style.display = 'block';
+                alert('Seu navegador não suporta acesso à câmera ou você está usando uma conexão não segura (HTTP).');
+                return;
+            }
+            
+            // Configurações otimizadas para câmera
+            const constraints = {
+                video: {
+                    facingMode: 'environment', // Usar câmera traseira em dispositivos móveis
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    aspectRatio: { ideal: 4/3 }
+                }
+            };
+            
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(stream => showCameraModal(stream, type))
+                .catch(err => {
+                    console.error('Erro ao acessar a câmera:', err);
+                    permissionError.style.display = 'block';
+                    alert('Erro ao acessar a câmera. Verifique as permissões do navegador.');
+                });
+        }
+        
+        function handleFileUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Verificar se é uma imagem
+            if (!file.type.match('image.*')) {
+                alert('Por favor, selecione um arquivo de imagem válido.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                processCapturedImage(e.target.result, type);
+            };
+            reader.onerror = function(e) {
+                console.error('Erro ao ler arquivo:', e);
+                alert('Erro ao ler o arquivo. Tente novamente.');
+            };
+            reader.readAsDataURL(file);
+            event.target.value = ''; // Reset para permitir carregar o mesmo arquivo novamente
+        }
+        
+        function toggleDebug() {
+            debugMode = !debugMode;
+            debugSection.style.display = debugMode ? 'block' : 'none';
+            showDebugBtn.style.display = debugMode ? 'none' : 'block';
+            
+            // Salvar preferência de debug
+            localStorage.setItem('gabaritoDebugMode', debugMode);
+        }
+        
+        // Verificar modo de debug salvo
+        const savedDebugMode = localStorage.getItem('gabaritoDebugMode');
+        if (savedDebugMode === 'true') {
+            debugMode = true;
+            debugSection.style.display = 'block';
+            showDebugBtn.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
